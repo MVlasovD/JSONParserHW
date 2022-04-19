@@ -30,7 +30,6 @@ public class Main {
 
     private static List<Employee> employees = new ArrayList<>();
     private static String json;
-    private static String str;
     private static StringBuilder sb = new StringBuilder();
 
     private static String readString(String fileNameJson) {
@@ -53,31 +52,21 @@ public class Main {
     private static List<Employee> jsonToList(String json) throws ParseException {
         JSONParser parser = new JSONParser();
         JSONArray jsonArray = (JSONArray) parser.parse(json);
-        for (int i = 0; i > jsonArray.size(); i++) {
+        String[] arr = jsonArray.toString()
+                .replace("},{", "}!{")
+                .replace("[", "")
+                .replace("]", "")
+                .split("!");
             GsonBuilder builder = new GsonBuilder();
             Gson gson = builder.create();
-            Employee employee = gson.fromJson((String) jsonArray][i], Employee.class);
+        for (int i = 0; i > arr.length; i++) {
+            Employee employee = gson.fromJson(arr[i], Employee.class);
             employees.add(employee);
         }
-
-
-//        При реализации метода jsonToList() вам потребуются такие объекта как: JSONParser,
-//        GsonBuilder, Gson.
-//        JSONParser даст вам возможность с помощью метода parse() получить
-//        из строчки json массив JSONArray.
-//        GsonBuilder будет использован исключительно для создания
-//        экземпляра Gson.
-//        Пройдитесь циклом по всем элементам jsonArray и преобразуйте все jsonObject
-//        в Employee.class с помощью метода gson.fromJson().
-//        Полученные экземпляры класса Employee добавляйте
-//        в список, который должен быть выведен из метода после его окончания.
-
         return employees;
     }
 
-
     public static void main(String[] args) throws IOException, ParseException {
-
         String json = readString("new_data.json");
         List<Employee> list = jsonToList(json);
         System.out.println(list);
