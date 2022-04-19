@@ -1,8 +1,6 @@
 import lombok.*;
 
-@Getter
-@Setter
-@ToString
+@Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class Employee {
@@ -11,5 +9,4 @@ public class Employee {
     public String lastName;
     public String country;
     public int age;
-
 }

@@ -3,78 +3,83 @@
  * @author VMN
  *
  */
+
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
 import org.w3c.dom.*;
 import org.xml.sax.SAXException;
+
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import java.io.File;
+import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 public class Main {
 
-    public static String listToJson(final List<Employee> list) {
-        GsonBuilder gsonBuilder = new GsonBuilder();
-        Gson gson = gsonBuilder.create();
-        Type listType = new TypeToken<List<Employee>>() {
-        }.getType();
-        String json = gson.toJson(list, listType);
+    private static List<Employee> employees = new ArrayList<>();
+    private static String json;
+    private static String str;
+    private static StringBuilder sb = new StringBuilder();
+
+    private static String readString(String fileNameJson) {
+        JSONParser parser = new JSONParser();
+        try {
+            Object obj = parser.parse(new FileReader(fileNameJson));
+            JSONArray jsonArray = (JSONArray) obj;
+            String[] arr = jsonArray.toString()
+                    .replace("},{", "}!{")
+                    .replace("[", "")
+                    .replace("]", "")
+                    .split("!");
+            json = Arrays.toString(arr);
+        } catch (IOException | org.json.simple.parser.ParseException e) {
+            e.printStackTrace();
+        }
         return json;
     }
 
-    public static void writeString(String json, String fileNameJson) throws IOException {
-        FileWriter file = new FileWriter(fileNameJson);
-        file.write(json);
-        file.flush();
-        System.out.println(
-                "File " + "'" + fileNameXMLst + "'" + " converted into " + "'" + fileNameJson + "'");
-    }
+    private static List<Employee> jsonToList(String json) throws ParseException {
+        JSONParser parser = new JSONParser();
+        JSONArray jsonArray = (JSONArray) parser.parse(json);
+        for (int i = 0; i > jsonArray.size(); i++) {
+            GsonBuilder builder = new GsonBuilder();
+            Gson gson = builder.create();
+            Employee employee = gson.fromJson((String) jsonArray][i], Employee.class);
+            employees.add(employee);
+        }
 
-    private static List<Employee> employees = new ArrayList<>();
 
-    private static List<Employee> parseXML(String fileNameXML)
-            throws IOException, SAXException, ParserConfigurationException {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        Document doc = builder.parse(new File(fileNameXML));
-        fileNameXMLst = fileNameXML;
-        Node root = doc.getDocumentElement();
-        read(root);
+//        При реализации метода jsonToList() вам потребуются такие объекта как: JSONParser,
+//        GsonBuilder, Gson.
+//        JSONParser даст вам возможность с помощью метода parse() получить
+//        из строчки json массив JSONArray.
+//        GsonBuilder будет использован исключительно для создания
+//        экземпляра Gson.
+//        Пройдитесь циклом по всем элементам jsonArray и преобразуйте все jsonObject
+//        в Employee.class с помощью метода gson.fromJson().
+//        Полученные экземпляры класса Employee добавляйте
+//        в список, который должен быть выведен из метода после его окончания.
+
         return employees;
     }
 
-    private static void read(Node node) {
-        NodeList nodeList = node.getChildNodes();
-        for (int i = 0; i < nodeList.getLength(); i++) {
-            Node ele = nodeList.item(i);
-            if (ele.getNodeType() != Node.TEXT_NODE) {
-                Element employee = (Element) ele;
-                employees.add(
-                        new Employee(Long.parseLong(employee.getElementsByTagName("id").item(0).getTextContent()),
-                                employee.getElementsByTagName("firstName").item(0).getTextContent(),
-                                employee.getElementsByTagName("lastName").item(0).getTextContent(),
-                                employee.getElementsByTagName("country").item(0).getTextContent(),
-                                Integer.parseInt(employee.getElementsByTagName("age").item(0).getTextContent())));
-            }
-        }
 
-    }
+    public static void main(String[] args) throws IOException, ParseException {
 
-    private static String fileNameXMLst;
-
-    public static void main(String[] args) throws
-            IOException, ParserConfigurationException, SAXException {
-
-        List<Employee> listXML = parseXML("data.xml");
-        String fileNameJson = "data2.json";
-        String json = listToJson(listXML);
-        writeString(json, fileNameJson);
+        String json = readString("new_data.json");
+        List<Employee> list = jsonToList(json);
+        System.out.println(list);
     }
 }
